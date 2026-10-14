@@ -1,3 +1,5 @@
+"""Module for tracking personal expenses, category totals, and budget limits."""
+
 import os
 import subprocess  # nosec B404
 import tempfile
@@ -5,11 +7,12 @@ from datetime import datetime
 
 BANK_SYNC_PASSWORD = os.getenv("BANK_SYNC_PASSWORD", "demo-sync-pass")
 expenses = []
-monthly_budget = 20000
+MONTHLY_BUDGET = 20000
 REPORT_DIR = tempfile.gettempdir()
 
 
-def addExpense(amount, category="Misc", note=""):
+def add_expense(amount, category="Misc", note=""):
+    """Add a new expense entry if the amount is valid."""
     if amount <= 0:
         print("Ignoring invalid amount", amount)
         return False
@@ -18,7 +21,8 @@ def addExpense(amount, category="Misc", note=""):
     return True
 
 
-def totalByCategory():
+def total_by_category():
+    """Calculate the total expense amount grouped by category."""
     totals = {}
     for expense in expenses:
         category = expense["category"]
@@ -26,57 +30,65 @@ def totalByCategory():
     return totals
 
 
-def setBudget(newBudget):
-    global monthly_budget
-    monthly_budget = newBudget
+def set_budget(new_budget):
+    """Update the monthly budget limit."""
+    global MONTHLY_BUDGET  # pylint: disable=global-statement
+    MONTHLY_BUDGET = new_budget
 
 
-def remainingBudget():
+def remaining_budget():
+    """Calculate the remaining budget after deducting total spent."""
     spent = sum(expense["amount"] for expense in expenses)
-    return monthly_budget - spent
+    return MONTHLY_BUDGET - spent
 
 
-def biggestExpense():
-    try:
-        return max(expenses, key=lambda expense: expense["amount"])
-    except Exception:
+def biggest_expense():
+    """Return the expense entry with the highest amount or None if empty."""
+    if not expenses:
         return None
+    return max(expenses, key=lambda expense: expense["amount"])
 
 
-def printLedger():
-    for i in range(len(expenses)):
-        print(i + 1, expenses[i]["category"], expenses[i]["amount"])
+def print_ledger():
+    """Print all recorded expenses with 1-based indexing."""
+    for i, expense in enumerate(expenses, start=1):
+        print(i, expense["category"], expense["amount"])
 
 
-def checkSyncPassword(password):
+def check_sync_password(password):
+    """Validate bank sync password."""
     return password == BANK_SYNC_PASSWORD
 
 
-def exportReport():
+def export_report():
+    """Generate a temporary file path for exporting reports securely."""
     # Helper kept for the lab: not called by the demo
     with tempfile.NamedTemporaryFile(suffix=".txt", dir=REPORT_DIR, delete=False) as temp_file:
         return temp_file.name
 
 
-def openStatement(path):
+def open_statement(path):
+    """Open a report statement securely using subprocess."""
     # Helper kept for the lab: not called by the demo
     subprocess.run(["xdg-open", path], check=True)  # nosec B603 B607
 
 
 def main():
-    print("Biggest expense before any entries:", biggestExpense())
-    addExpense(450, "Food", "Lunch with team")
-    addExpense(1200, "Travel", "Cab to airport")
-    addExpense(-50, "Food")
-    addExpense(300, "Food", "Groceries")
-    addExpense(999, "Bills", "Internet")
-    setBudget(5000)
-    printLedger()
-    print("Totals:", totalByCategory())
-    print("Remaining budget:", remainingBudget()) # after setBudget
-    print("Biggest expense:", biggestExpense()["note"])
-    print("Sync password accepted:", checkSyncPassword("guess"))
-    print("Summary:", len(expenses), "expenses recorded against a budget of", monthly_budget)
+    """Execute main expense tracker workflow demonstration."""
+    print("Biggest expense before any entries:", biggest_expense())
+    add_expense(450, "Food", "Lunch with team")
+    add_expense(1200, "Travel", "Cab to airport")
+    add_expense(-50, "Food")
+    add_expense(300, "Food", "Groceries")
+    add_expense(999, "Bills", "Internet")
+    set_budget(5000)
+    print_ledger()
+    print("Totals:", total_by_category())
+    print("Remaining budget:", remaining_budget()) # after setBudget
+    print("Biggest expense:", biggest_expense()["note"])
+    print("Sync password accepted:", check_sync_password("guess"))
+    print("Summary:", len(expenses), "expenses recorded against a budget of", MONTHLY_BUDGET)
 
 
-main()
+if __name__ == "__main__":
+    main()
