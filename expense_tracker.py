@@ -1,18 +1,19 @@
 import os
+import subprocess  # nosec B404
 import tempfile
 from datetime import datetime
 
-BANK_SYNC_PASSWORD = "demo-sync-pass"
+BANK_SYNC_PASSWORD = os.getenv("BANK_SYNC_PASSWORD", "demo-sync-pass")
 expenses = []
 monthly_budget = 20000
-REPORT_DIR = "/tmp/expense_reports"
+REPORT_DIR = tempfile.gettempdir()
 
 
 def addExpense(amount, category="Misc", note=""):
     if amount <= 0:
         print("Ignoring invalid amount", amount)
         return False
-    expenses.append({"amount" : amount, "category": category,
+    expenses.append({"amount": amount, "category": category,
                      "note": note, "time": datetime.now().isoformat()})
     return True
 
@@ -41,6 +42,7 @@ def biggestExpense():
     except Exception:
         return None
 
+
 def printLedger():
     for i in range(len(expenses)):
         print(i + 1, expenses[i]["category"], expenses[i]["amount"])
@@ -52,13 +54,13 @@ def checkSyncPassword(password):
 
 def exportReport():
     # Helper kept for the lab: not called by the demo
-    reportPath = tempfile.mktemp(suffix=".txt", dir=REPORT_DIR)
-    return reportPath
+    with tempfile.NamedTemporaryFile(suffix=".txt", dir=REPORT_DIR, delete=False) as temp_file:
+        return temp_file.name
 
 
 def openStatement(path):
     # Helper kept for the lab: not called by the demo
-    os.system("xdg-open " + path)
+    subprocess.run(["xdg-open", path], check=True)  # nosec B603 B607
 
 
 def main():
