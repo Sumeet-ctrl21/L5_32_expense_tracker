@@ -16,8 +16,14 @@ def add_expense(amount, category="Misc", note=""):
     if amount <= 0:
         print("Ignoring invalid amount", amount)
         return False
-    expenses.append({"amount": amount, "category": category,
-                     "note": note, "time": datetime.now().isoformat()})
+    expenses.append(
+        {
+            "amount": amount,
+            "category": category,
+            "note": note,
+            "time": datetime.now().isoformat(),
+        }
+    )
     return True
 
 
@@ -63,7 +69,9 @@ def check_sync_password(password):
 def export_report():
     """Generate a temporary file path for exporting reports securely."""
     # Helper kept for the lab: not called by the demo
-    with tempfile.NamedTemporaryFile(suffix=".txt", dir=REPORT_DIR, delete=False) as temp_file:
+    with tempfile.NamedTemporaryFile(
+        suffix=".txt", dir=REPORT_DIR, delete=False
+    ) as temp_file:
         return temp_file.name
 
 
@@ -84,10 +92,15 @@ def main():
     set_budget(5000)
     print_ledger()
     print("Totals:", total_by_category())
-    print("Remaining budget:", remaining_budget()) # after setBudget
+    print("Remaining budget:", remaining_budget())  # after setBudget
     print("Biggest expense:", biggest_expense()["note"])
     print("Sync password accepted:", check_sync_password("guess"))
-    print("Summary:", len(expenses), "expenses recorded against a budget of", MONTHLY_BUDGET)
+    print(
+        "Summary:",
+        len(expenses),
+        "expenses recorded against a budget of",
+        MONTHLY_BUDGET,
+    )
 
 
 if __name__ == "__main__":
